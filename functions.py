@@ -251,13 +251,3 @@ def print_image_by_dataset_and_name(image, data_set_name,model):
     repo_path = repo_image_path(path)
     predict_plot_image(repo_path,model)
 
-
-def save_zipped_pickle(obj, filename, protocol=-1):
-    with bz2.BZ2File(filename, 'wb') as f:
-        pickle.dump(obj, f, protocol)
-
-def load_zipped_pickle_to_dataframe(filename):
-    with bz2.BZ2File(filename, 'rb') as f:
-        loaded_object = pickle.load(f)
-        df = pd.DataFrame(loaded_object)  # Assuming the loaded object is compatible with DataFrame creation
-        return df

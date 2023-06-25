@@ -4,6 +4,7 @@
 import cv2
 from cv2 import IMREAD_COLOR, IMREAD_UNCHANGED
 from PIL import Image, ImageStat
+import functions as utils
 
 import numpy as np
 
@@ -27,7 +28,9 @@ def return_aspect_ratio(w,h):
 
 # Calculate the mean brightness value
 def get_image_brightness(image_path):
-    image = cv2.imread(image_path)
+    path = utils.repo_image_path(image_path)
+    image = cv2.imread(path)
+
     im = convert_image_to_grayscale(image)
     brightness = int(round(cv2.mean(im)[0]))
     return brightness
@@ -40,8 +43,8 @@ def get_image_brightness(image_path):
 
 """ contrast """
 def get_image_contrast(image_path):
-
-    image = cv2.imread(image_path)
+    path = utils.repo_image_path(image_path)
+    image = cv2.imread(path)
     # load image as YUV (or YCbCR) and select Y (intensity)
     y = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)[:, :, 0]
 
@@ -104,16 +107,15 @@ https://www.kaggle.com/code/eladhaziza/perform-blur-detection-with-opencv
 
 #define bluriness using laplacian
 def is_blurry(image_path):
-  #read the image
-  image = cv2.imread(image_path)
+    path = utils.repo_image_path(image_path)
+    #read the image
+    image = cv2.imread(path)
+    #Compute Laplacian
+    laplacian = cv2.Laplacian(image, cv2.CV_64F)
 
-  #Compute Laplacian 
-  laplacian = cv2.Laplacian(image, cv2.CV_64F)
-
-  #calculate the variance of the laplaican 
-  var = np.var(laplacian)
-
-  return var
+    #calculate the variance of the laplaican
+    var = np.var(laplacian)
+    return var
 
 def variance_of_laplacian(img2):
   # compute the Laplacian of the image and then return the focus
