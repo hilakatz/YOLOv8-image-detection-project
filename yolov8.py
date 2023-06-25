@@ -214,8 +214,8 @@ if SAVE_FLAG:
     df_list = [df_coco, df_mouse, df_zebra, df_windows, df_kangaroos, iou_df]
 
     # save as PKL file
-    for (dataframe,name) in zip(df_list,dataset_names):
-        utils.save_zipped_pickle(dataframe,utils.repo_image_path('/' + FOLDER_NAME + '/' + name + '.pkl'))
+    for (dataframe,name) in zip(df_list, dataset_names):
+        dataframe.to_csv(utils.repo_image_path('/' + FOLDER_NAME + '/' + name + '.csv'))
 
 """ Load dataframes """
 
@@ -223,7 +223,7 @@ csv_list = ['kangaroos', 'mouse', 'windows', 'zebra', 'iou_scores']
 df_dict = {}
 
 for csv_file in csv_list:
-    df = utils.load_zipped_pickle_to_dataframe(utils.repo_image_path('/' + FOLDER_NAME + '/' + csv_file + '.pkl'))
+    df = pd.read_csv(utils.repo_image_path('/' + FOLDER_NAME + '/' + csv_file + '.csv'))
     df_dict[csv_file] = df
 
 """ Image properties """
@@ -241,7 +241,7 @@ for key, dataframe in df_dict.items():
 
 
 visual_utils.histogram(df_dict['kangaroos'],'aspect_ratio')
-visual_utils.correlation(df_dict['kangaroos'],'avg_score','aspect_ratio')
+visual_utils.correlation(df_dict['kangaroos'], 'avg_score', 'aspect_ratio')
 
 
 """ characteristics for statistics- num_of_annotations, aspect_ratio, brightness, contrast, .... """

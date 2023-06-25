@@ -71,8 +71,7 @@ def create_df(dataset_dir, image_type, yolo_model, color=None):
             list_of_boxes = boxes.xyxy.tolist()
 
             # append to dataframe
-            df = pd.DataFrame([{'name': image, 'image': im, 'height': h, 'width': w, 'boxes': list_of_boxes}])
-
+            df = pd.DataFrame([{'name': image, 'image': photo_filename, 'height': h, 'width': w, 'boxes': list_of_boxes}])
             pred_df = pd.concat([pred_df, df], ignore_index=True)
     return pred_df
 
@@ -262,12 +261,3 @@ def load_zipped_pickle_to_dataframe(filename):
         loaded_object = pickle.load(f)
         df = pd.DataFrame(loaded_object)  # Assuming the loaded object is compatible with DataFrame creation
         return df
-
-
-def save_to_feather(df,filename):
-    df.reset_index().to_feather(filename)
-
-
-def load_feather(filename):
-    df = pd.read_feather(filename)
-    return df

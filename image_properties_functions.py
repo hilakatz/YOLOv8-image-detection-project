@@ -26,7 +26,8 @@ def return_aspect_ratio(w,h):
 #source: https://stackoverflow.com/questions/3490727/what-are-some-methods-to-analyze-image-brightness-using-python
 
 # Calculate the mean brightness value
-def get_image_brightness(image):
+def get_image_brightness(image_path):
+    image = cv2.imread(image_path)
     im = convert_image_to_grayscale(image)
     brightness = int(round(cv2.mean(im)[0]))
     return brightness
@@ -38,7 +39,9 @@ def get_image_brightness(image):
 
 
 """ contrast """
-def get_image_contrast(image):
+def get_image_contrast(image_path):
+
+    image = cv2.imread(image_path)
     # load image as YUV (or YCbCR) and select Y (intensity)
     y = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)[:, :, 0]
 
@@ -100,9 +103,9 @@ https://www.kaggle.com/code/eladhaziza/perform-blur-detection-with-opencv
 """
 
 #define bluriness using laplacian
-def is_blurry(image):
+def is_blurry(image_path):
   #read the image
-  image = image
+  image = cv2.imread(image_path)
 
   #Compute Laplacian 
   laplacian = cv2.Laplacian(image, cv2.CV_64F)
