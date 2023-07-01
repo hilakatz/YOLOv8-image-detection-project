@@ -21,6 +21,7 @@ from json import loads, dumps
 import xml.etree.ElementTree as ET
 import torchvision.models as models
 
+
 # change image path to current repo
 def repo_image_path(path_from_repo_root):
     repo = git.Repo('.', search_parent_directories=True)
@@ -28,8 +29,11 @@ def repo_image_path(path_from_repo_root):
     relative_path = repo_root + path_from_repo_root
     return relative_path
 
+
 # function to predict and plot image
 """split to predict and print"""
+
+
 def predict_plot_image(image_path,model_trained):
   results = model_trained(image_path)
   res_plotted = results[0].plot()
@@ -37,7 +41,9 @@ def predict_plot_image(image_path,model_trained):
   cv2.waitKey(0)
   cv2.destroyAllWindows()
 
+
 """ Functions for prediction """
+
 
 # returns masks, boxes and class probabilities for each image
 def return_bbox_masks_probs(res_lst):
@@ -46,6 +52,7 @@ def return_bbox_masks_probs(res_lst):
         masks = result.masks  # Masks object for segmenation masks outputs
         probs = result.probs  # Class probabilities for classification outputs
     return boxes, masks, probs
+
 
 # create dataset with image data, predicted boxes and size
 def create_df(dataset_dir, image_type, yolo_model, color=None):
@@ -75,6 +82,7 @@ def create_df(dataset_dir, image_type, yolo_model, color=None):
             pred_df = pd.concat([pred_df, df], ignore_index=True)
     return pred_df
 
+
 # extract predicted boxes from annotation file
 def extract_boxes(dataset_dir):
     boxes = {}
@@ -99,6 +107,7 @@ def extract_boxes(dataset_dir):
         boxes[txt_file] = bbox_list
     return boxes
 
+
 # extract real boxes from annotation file in xml format
 def extract_xml_boxes(dataset_dir):
     boxes = {}
@@ -120,11 +129,13 @@ def extract_xml_boxes(dataset_dir):
         boxes[txt_file] = bbox_list
     return boxes
 
+
 # create dataframe with image name and annotations
 def create_annotations_df(annotations_dir):
     anno_dict = extract_boxes(annotations_dir)
     df_anno = pd.DataFrame({'name': anno_dict.keys(), 'annotations': anno_dict.values()})
     return df_anno
+
 
 # convert absolute boxes measures to relative format
 def boxes_abs_to_relative(boxes, h, w):
@@ -138,6 +149,7 @@ def boxes_abs_to_relative(boxes, h, w):
             relative_boxes.append([xmin, ymin, xmax, ymax])
     return relative_boxes
 
+
 # convert yolo boxes measures to relative format
 def yolo_to_relative(boxes):
     relative_boxes = []
@@ -148,6 +160,7 @@ def yolo_to_relative(boxes):
         ymax = (box[1] + box[3] / 2)
         relative_boxes.append([xmin, ymin, xmax, ymax])
     return relative_boxes
+
 
 # calculate and return IOU per image
 def bbox_iou(box1, box2):
@@ -172,6 +185,7 @@ def bbox_iou(box1, box2):
     iou = intersection_area / union_area
     return iou
 
+
 # function to calculate IoU between two lists of bboxes
 def calculate_iou_list(pred_bboxes, ann_bboxes):
     iou_list = []
@@ -187,6 +201,7 @@ def calculate_iou_list(pred_bboxes, ann_bboxes):
 
     return iou_list
 
+
 # function to calculate the maximum IOU in case of
 # #several predictions for the same image
 def max_iou(list_of_iou):
@@ -198,7 +213,9 @@ def max_iou(list_of_iou):
             max_lst.append(0)
     return max_lst
 
+
 """ Pipeline function """
+
 
 # create dataframe with all the relevant data
 def pipeline(dataset_name, dataset_path, annotation_path, image_format, model, annotation_foramt=None, color=None):
@@ -239,15 +256,21 @@ def pipeline(dataset_name, dataset_path, annotation_path, image_format, model, a
     total_iou = df_images['avg_score'].mean()
     return df_images, total_iou
 
+
 # functions to print images with low iou score
 def print_low_score_images(df_low, dataset_name,model_trained):
   image_list = df_low.index.values.tolist()
   for image in image_list:
     print_image_by_dataset_and_name(image, dataset_name,model_trained)
 
-#functions to save pkl files
+
+# functions to save pkl files
 def print_image_by_dataset_and_name(image, data_set_name,model):
     path = f"/{data_set_name}/{image}"
     repo_path = repo_image_path(path)
     predict_plot_image(repo_path,model)
 
+
+def correlation(df, column1, column2):
+    correlation_coefficient = df[[column1, column2]].corr().iloc[0, 1]
+    return correlation_coefficient
