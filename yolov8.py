@@ -237,11 +237,30 @@ for key, dataframe in df_dict.items():
         # image contrast
         dataframe['contrast'] = dataframe.apply(lambda row: image_utils.get_image_contrast(row['image']), axis=1)
         # image blurriness
-        dataframe['is_blurry'] = dataframe.apply(lambda row: image_utils.is_blurry(row['image']), axis=1)
+        dataframe['sharpness'] = dataframe.apply(lambda row: image_utils.get_image_sharpness(row['image']), axis=1)
+        # image noise
+        dataframe['noise'] = dataframe.apply(lambda row: image_utils.get_image_noise(row['image']), axis=1)
+        # image saturation
+        dataframe['saturation'] = dataframe.apply(lambda row: image_utils.get_image_saturation(row['image']), axis=1)
+        # image entropy
+        dataframe['entropy'] = dataframe.apply(lambda row: image_utils.get_image_entropy(row['image']), axis=1)
+        # image edges
+        dataframe['edges'] = dataframe.apply(lambda row: image_utils.edge_detection(row['image']), axis=1)
+        # image estimate noise
+        dataframe['estimate_noise'] = dataframe.apply(lambda row: image_utils.estimate_noise(row['image']), axis=1)
+        # image red channel percentage
+        dataframe['red_channel'] = dataframe.apply(lambda row: image_utils.get_channel_percentage(row['image'], 0),
+                                                   axis=1)
+        # image blue channel percentage
+        dataframe['blue_channel'] = dataframe.apply(lambda row: image_utils.get_channel_percentage(row['image'], 1),
+                                                    axis=1)
+        # image green channel percentage
+        dataframe['green_channel'] = dataframe.apply(lambda row: image_utils.get_channel_percentage(row['image'], 2),
+                                                   axis=1)
 
 
-visual_utils.histogram(df_dict['kangaroos'],'aspect_ratio')
-visual_utils.correlation(df_dict['kangaroos'], 'avg_score', 'aspect_ratio')
+visual_utils.histogram(df_dict['mouse'], 'red_channel')
+visual_utils.correlation(df_dict['mouse'], 'avg_score', 'red_channel')
 
 
 """ characteristics for statistics- num_of_annotations, aspect_ratio, brightness, contrast, .... """
