@@ -1,12 +1,18 @@
 ''' image properties functions '''
 
 # imports
+import math
+
 import cv2
+import skimage
 from cv2 import IMREAD_COLOR, IMREAD_UNCHANGED
 from PIL import Image, ImageStat
+from scipy.signal import convolve2d
+
 import functions as utils
 
 import numpy as np
+
 
 # convert BGR to RGB
 def BGR2RGB(BGR_img):
@@ -14,14 +20,17 @@ def BGR2RGB(BGR_img):
   rgb_image = cv2.cvtColor(BGR_img, cv2.COLOR_BGR2RGB)
   return rgb_image
 
+
 # Convert the image to grayscale
 def convert_image_to_grayscale(image):
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     return gray_image
 
+
 """ aspect ratio (width-height) """
 def return_aspect_ratio(w,h):
     return float(w) / h
+
 
 """brightness"""
 #source: https://stackoverflow.com/questions/3490727/what-are-some-methods-to-analyze-image-brightness-using-python
@@ -34,11 +43,6 @@ def get_image_brightness(image_path):
     im = convert_image_to_grayscale(image)
     brightness = int(round(cv2.mean(im)[0]))
     return brightness
-
-# calculate with rms?
-
-""" perceived brightness """
-
 
 
 """ contrast """
@@ -61,52 +65,12 @@ def get_image_contrast(image_path):
     return contrast
 
 
-#def get_image_contrast(image):
-#    # Calculate the standard deviation of pixel intensities
-#    contrast = np.std(image)
-#    return contrast
-
-
-""" BGR histograms """
-def bgr_histograms(image, name):
-
-    # Get BGR data from image
-    blue_channel = cv2.calcHist([img], [0], None, [256], [0, 256])
-    green_channel = cv2.calcHist([img], [1], None, [256], [0, 256])
-    red_channel = cv2.calcHist([img], [2], None, [256], [0, 256])
-
-    # Separate Histograms for each color
-    plt.subplot(3, 1, 1)
-    plt.title("Histogram of Blue Image")
-    plt.xlabel("Pixel Intensity")
-    plt.ylabel("Pixel Frequency")
-    plt.plot(blue_channel, color="blue")
-
-    plt.subplot(3, 1, 2)
-    plt.title("Histogram of Green Image")
-    plt.xlabel("Pixel Intensity")
-    plt.ylabel("Pixel Frequency")
-    plt.plot(green_channel, color="green")
-
-    plt.subplot(3, 1, 3)
-    plt.title("Histogram of Red Image")
-    plt.xlabel("Pixel Intensity")
-    plt.ylabel("Pixel Frequency")
-    plt.plot(red_channel, color="red")
-
-    hist_name = 'rgb_histogram ' + name
-
-    plt.savefig(hist_name)
-
-
-
-
 """blur
 https://www.kaggle.com/code/eladhaziza/perform-blur-detection-with-opencv
 """
 
 #define bluriness using laplacian
-def is_blurry(image_path):
+def get_image_sharpness(image_path):
     path = utils.repo_image_path(image_path)
     #read the image
     image = cv2.imread(path)
@@ -117,80 +81,6 @@ def is_blurry(image_path):
     var = np.var(laplacian)
     return var
 
-def variance_of_laplacian(img2):
-  # compute the Laplacian of the image and then return the focus
-  # measure, which is simply the variance of the Laplacian
-  gray = cv2.cvtColor(img2, cv2.COLOR_RGB2BGR)
-  return cv2.Laplacian(gray, cv2.CV_64F).var()
-
-
-
-
-def blurrinesDetection(directories, threshold):
-  columns = 3
-  rows = len(directories) // 2
-  fig = plt.figure(figsize=(5 * columns, 4 * rows))
-  for i, directory in enumerate(directories):
-    fig.add_subplot(rows, columns, i + 1)
-    img = cv2.imread(directory)
-    text = "Not Blurry"
-    # if the focus measure is less than the supplied threshold,
-    # then the image should be considered "blurry
-    fm = variance_of_laplacian(img)
-    if fm < threshold:
-      text = "Blurry"
-    rgb_img = BGR2RGB(img)
-    cv2.putText(rgb_img, "{}: {:.2f}".format(text, fm), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-    plt.imshow(rgb_img)
-  plt.show()
-
-  def num_of_edges_in_photo(image_path, lower_threshold, higher_threshold):
-    # Load the image
-    img = cv2.imread(image_path)
-
-    # Convert the image to grayscale
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-    # Apply Canny edge detection algorithm
-    edges = cv2.Canny(gray, lower_threshold, higher_threshold)
-
-    # Count the number of edges
-    num_edges = cv2.countNonZero(edges)
-
-    # Print the number of edges
-    return num_edges
-
-  def ppi_resolution(image_path):
-      from PIL import Image
-      from fractions import Fraction
-
-      # Load the image
-      img = Image.open(image_path)
-
-      # Extract the DPI information from the EXIF data
-      dpi_x, dpi_y = img.info.get('dpi', (None, None))
-
-      # Extract the physical size information from the EXIF data
-      x_res, y_res = img.info.get('xresolution', None), img.info.get('yresolution', None)
-      if x_res and y_res:
-        x_res, y_res = Fraction(x_res[0], x_res[1]), Fraction(y_res[0], y_res[1])
-        dpi_x, dpi_y = float(x_res), float(y_res)
-
-      # Calculate the physical size of the image in inches
-      if dpi_x and dpi_y:
-        width_in = img.size[0] / dpi_x
-
-      # Load the image in cv2
-      img = cv2.imread(image_path)
-
-      # Get the image size in pixels
-      width_px, height_px = img.shape[:2]
-
-      # Calculate the ppi/dpi of the image
-      ppi = round(width_px / width_in)
-
-      # return the results
-      return ppi
 
 """ object precentage from image """
 #considering there is at least one object per image
@@ -224,4 +114,89 @@ def object_percentage(image_path, object_color_lower, object_color_upper):
 
     return object_percentages
 
- 
+
+def edge_detection(image_path, lower_threshold=50, higher_threshold=150):
+    path = utils.repo_image_path(image_path)
+    image = cv2.imread(path)
+
+    gray = convert_image_to_grayscale(image)
+
+
+    # Apply Canny edge detection algorithm
+    edges = cv2.Canny(gray, lower_threshold, higher_threshold)
+
+    # Count the number of edges
+    num_edges = cv2.countNonZero(edges)
+
+    # Print the number of edges
+    return num_edges
+
+
+def get_image_noise(image_path):
+    path = utils.repo_image_path(image_path)
+    # Load the image
+    img = cv2.imread(path)
+    # Convert the image to grayscale
+    gray = convert_image_to_grayscale(img)
+    # Calculate the standard deviation of pixel intensities as a measure of image noise
+    noise = np.std(gray)
+    return noise
+
+
+def get_image_saturation(image_path):
+    path = utils.repo_image_path(image_path)
+    # Load the image
+    img = cv2.imread(path)
+    # Convert the image to HSV color space
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    # Calculate the standard deviation of pixel intensities as a measure of image noise
+    saturation = np.std(hsv[:, :, 1])
+    return saturation
+
+
+def get_image_entropy(image_path):
+    path = utils.repo_image_path(image_path)
+    # Load the image
+    img = cv2.imread(path)
+    # Convert the image to grayscale
+    gray = convert_image_to_grayscale(img)
+    # Calculate the entropy of the grayscale image
+    entropy = skimage.measure.shannon_entropy(gray)
+    return entropy
+
+
+def estimate_noise(image_path):
+    # https://stackoverflow.com/questions/2440504/noise-estimation-noise-measurement-in-image
+    path = utils.repo_image_path(image_path)
+    # Load the image
+    img = cv2.imread(path)
+    # Convert the image to grayscale
+    gray = convert_image_to_grayscale(img)
+    H, W = gray.shape
+
+    M = [[1, -2, 1],
+        [-2, 4, -2],
+        [1, -2, 1]]
+
+    sigma = np.sum(np.sum(np.absolute(convolve2d(gray, M))))
+    sigma = sigma * math.sqrt(0.5 * math.pi) / (6 * (W-2) * (H-2))
+
+    return sigma
+
+
+#   return color_channel_percentage
+def get_channel_percentage(image_path, channel):
+    path = utils.repo_image_path(image_path)
+    image = cv2.imread(path)
+    height, width = image.shape[:2]
+
+    # Get the sum of the pixels in the red channel.
+    channel_sum = 0
+    for row in range(height):
+        for col in range(width):
+            channel_sum += image[row, col, channel]
+
+    # Calculate the percentage of the red channel.
+    channel_percentage = channel_sum / (width * height)
+
+    return channel_percentage
