@@ -32,7 +32,7 @@ def histogram(df, column_name):
     plt.show()
 
 
-def correlation(df, column1, column2):
+def scatter_plot_correlation(df, column1, column2):
     if not (pd.api.types.is_numeric_dtype(df[column1]) and pd.api.types.is_numeric_dtype(df[column2])):
         print("Error: Both columns should be numeric.")
         return
@@ -66,3 +66,14 @@ def correlation(df, column1, column2):
             column1, column2)
 
     print(explanation)
+
+
+def plot_corr(df, name):
+    f, ax = plt.subplots(figsize=(10, 8))
+    corr = df.corr(numeric_only=True)
+    sns.heatmap(corr,
+                cmap=sns.diverging_palette(220, 10, as_cmap=True),
+                vmin=-1.0, vmax=1.0,
+                square=True, ax=ax)
+    plt.title('Correlation Matrix for {}'.format(name))
+    plt.show()
