@@ -118,9 +118,9 @@ def object_percentage(image_path, object_color_lower, object_color_upper):
 def edge_detection(image_path, lower_threshold=50, higher_threshold=150):
     path = utils.repo_image_path(image_path)
     image = cv2.imread(path)
+    height, width = image.shape[:2]
 
     gray = convert_image_to_grayscale(image)
-
 
     # Apply Canny edge detection algorithm
     edges = cv2.Canny(gray, lower_threshold, higher_threshold)
@@ -128,8 +128,8 @@ def edge_detection(image_path, lower_threshold=50, higher_threshold=150):
     # Count the number of edges
     num_edges = cv2.countNonZero(edges)
 
-    # Print the number of edges
-    return num_edges
+    # Return the edge frequency
+    return num_edges / (height * width)
 
 
 def get_image_noise(image_path):
@@ -188,15 +188,14 @@ def estimate_noise(image_path):
 def get_channel_percentage(image_path, channel):
     path = utils.repo_image_path(image_path)
     image = cv2.imread(path)
-    height, width = image.shape[:2]
 
-    # Get the sum of the pixels in the red channel.
-    channel_sum = 0
-    for row in range(height):
-        for col in range(width):
-            channel_sum += image[row, col, channel]
+    # Get the sum of all pixels in the image (across all channels).
+    total_brightness = np.sum(image)
 
-    # Calculate the percentage of the red channel.
-    channel_percentage = channel_sum / (width * height)
+    # Get the sum of the pixels in the specified channel.
+    channel_sum = np.sum(image[:, :, channel])
+
+    # Calculate the percentage of the specified channel relative to the total brightness.
+    channel_percentage = channel_sum / total_brightness * 100
 
     return channel_percentage

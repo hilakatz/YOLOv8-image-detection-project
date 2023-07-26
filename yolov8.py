@@ -289,3 +289,12 @@ if IMAGE_PROPERTIES_FLAG:
             corr_df_data.append(row_data)
     corr_df = pd.DataFrame(corr_df_data)
     corr_df.to_csv(utils.repo_image_path('/corr.csv'))
+    # show corr_df as html
+    styled_corr_df = corr_df.style.background_gradient(cmap='coolwarm')
+
+    # Render the styled DataFrame as HTML
+    html = styled_corr_df.render()
+
+    # Display the HTML in a web browser
+    with open('styled_corr.html', 'w') as f:
+        f.write(html)
