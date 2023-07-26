@@ -199,3 +199,19 @@ def get_channel_percentage(image_path, channel):
     channel_percentage = channel_sum / total_brightness * 100
 
     return channel_percentage
+
+
+def get_salt_and_pepper_noise(image_path):
+    path = utils.repo_image_path(image_path)
+    # Load the image
+    img = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+
+    # Calculate the percentage of white and black pixels
+    num_pixels = img.shape[0] * img.shape[1]
+    white_pixels = np.sum(img == 255)
+    black_pixels = np.sum(img == 0)
+    salt_pepper_pixels = white_pixels + black_pixels
+    noise_percentage = salt_pepper_pixels / num_pixels
+
+    # Apply threshold to identify salt and pepper noise
+    return noise_percentage
