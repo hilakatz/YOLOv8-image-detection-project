@@ -32,6 +32,7 @@ import torchvision.models as models
 
 import ultralytics
 from ultralytics import YOLO
+# import tensorflow as tf
 
 # !pip install pyyaml h5py
 
@@ -52,7 +53,7 @@ FOLDER_NAME = 'dataframes'
 MODEL_FLAG = 0
 PREDICTION_FLAG = 0
 SAVE_FLAG = 0
-IMAGE_PROPERTIES_FLAG = 0
+IMAGE_PROPERTIES_FLAG = 1
 
 " Predict images and create dataframe if PREDICTION_FLAG is Yes"
 
@@ -230,6 +231,11 @@ for csv_file in csv_list:
     df = pd.read_csv(utils.repo_image_path('/' + FOLDER_NAME + '/' + csv_file + '.csv'))
     df_dict[csv_file] = df
 
+""" Blurriness Model """
+# here we need to load model
+# model_path = utils.repo_image_path('/cnn_blur_model.keras')
+# model_blurriness = tf.keras.models.load_model('cnn_blur_model.keras')
+
 """ Image properties """
 if IMAGE_PROPERTIES_FLAG:
     for key, dataframe in tqdm(df_dict.items()):
@@ -262,7 +268,10 @@ if IMAGE_PROPERTIES_FLAG:
                                                         axis=1)
             # image green channel percentage
             dataframe['green_channel'] = dataframe.apply(lambda row: image_utils.get_channel_percentage(row['image'], 2),
-                                                       axis=1)
+                                                         axis=1)
+            # image salt and pepper noise
+            dataframe['salt_pepper_noise'] = dataframe.apply(lambda row: image_utils.get_salt_and_pepper_noise(row['image']),
+                                                             axis=1)
 
     """ Visualizations """
 
