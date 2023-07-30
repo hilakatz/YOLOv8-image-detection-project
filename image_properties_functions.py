@@ -215,3 +215,18 @@ def get_salt_and_pepper_noise(image_path):
 
     # Apply threshold to identify salt and pepper noise
     return noise_percentage
+
+def get_image_blurriness_by_model(image_path, model):
+    # Load and preprocess the image
+    path = utils.repo_image_path(image_path)
+    image = cv2.imread(path)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image = cv2.resize(image, (600, 600))  # Assuming your CNN model requires input size of (600, 600)
+    image = image / 255.0  # Normalize pixel values to [0, 1]
+    image = np.expand_dims(image, axis=0)  # Add batch dimension
+
+    # Make the prediction
+    prediction = model.predict(image)
+    predicted_class = int(np.round(prediction[0][0]))  # Convert prediction to binary value (0 or 1)
+
+    return predicted_class
