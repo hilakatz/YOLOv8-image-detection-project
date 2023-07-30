@@ -53,7 +53,7 @@ FOLDER_NAME = 'dataframes'
 MODEL_FLAG = 0
 PREDICTION_FLAG = 0
 SAVE_FLAG = 0
-IMAGE_PROPERTIES_FLAG = 1
+IMAGE_PROPERTIES_FLAG = 0
 
 " Predict images and create dataframe if PREDICTION_FLAG is Yes"
 
