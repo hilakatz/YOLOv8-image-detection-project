@@ -32,7 +32,7 @@ import torchvision.models as models
 
 import ultralytics
 from ultralytics import YOLO
-import tensorflow as tf
+# import tensorflow as tf
 
 # !pip install pyyaml h5py
 
@@ -233,12 +233,8 @@ for csv_file in csv_list:
 
 """ Blurriness Model """
 # here we need to load model
-print("Loading blurriness model...")
-model_path = utils.repo_image_path('/cnn_blur_model.keras')
-model_blurriness = tf.keras.models.load_model('cnn_blur_model.keras',compile=False)
-model_blurriness.compile(optimizer='adam',
-              loss='binary_crossentropy',
-              metrics=['accuracy'])
+# model_path = utils.repo_image_path('/cnn_blur_model.keras')
+# model_blurriness = tf.keras.models.load_model('cnn_blur_model.keras')
 
 """ Image properties """
 if IMAGE_PROPERTIES_FLAG:
@@ -276,8 +272,6 @@ if IMAGE_PROPERTIES_FLAG:
             # image salt and pepper noise
             dataframe['salt_pepper_noise'] = dataframe.apply(lambda row: image_utils.get_salt_and_pepper_noise(row['image']),
                                                              axis=1)
-            # image blurriness by model
-            dataframe['blurriness'] = dataframe.apply(lambda row: image_utils.get_image_blurriness_by_model(row['image'], model_blurriness), axis=1)
 
     """ Visualizations """
 
@@ -292,7 +286,7 @@ if IMAGE_PROPERTIES_FLAG:
 
     """ Make & Save Correlation Dataframe """
 
-    image_properties_list = ['aspect_ratio', 'brightness', 'contrast', 'sharpness', 'noise', 'saturation', 'entropy', 'edges', 'estimate_noise', 'red_channel', 'blue_channel', 'green_channel','salt_pepper_noise','blurriness']
+    image_properties_list = ['aspect_ratio', 'brightness', 'contrast', 'sharpness', 'noise', 'saturation', 'entropy', 'edges', 'estimate_noise', 'red_channel', 'blue_channel', 'green_channel']
     corr_df_data = []
     for key, dataframe in tqdm(df_dict.items()):
         if key != 'iou_scores':
