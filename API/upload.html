@@ -1,0 +1,32 @@
+<!-- upload.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Upload</title>
+    <!-- Add dropzone.js library -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.2/min/dropzone.min.css">
+</head>
+<body>
+    <h1>Image Upload</h1>
+    <!-- Create a dropzone element -->
+    <form action="/upload" class="dropzone" id="imageDropzone"></form>
+
+    <!-- Add a "Process" button -->
+    <button id="processBtn">Process</button>
+
+    <!-- Add dropzone.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.2/min/dropzone.min.js"></script>
+    <script>
+        // Add an event listener to the "Process" button
+        document.getElementById("processBtn").addEventListener("click", function() {
+            // Trigger the process route on the server
+            fetch("/process")
+                .then(response => response.json())
+                .then(data => {
+                    // Redirect to the dashboard page after processing
+                    window.location.href = "/dashboard";
+                });
+        });
+    </script>
+</body>
+</html>
