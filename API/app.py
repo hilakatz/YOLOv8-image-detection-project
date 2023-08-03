@@ -13,12 +13,12 @@ import cv2
 app = dash.Dash(__name__)
 
 # Load the pre-calculated statistics from the corr.csv file
-df_corr = pd.read_csv('corr.csv', index_col=0)
+#df_corr = pd.read_csv('corr.csv', index_col=0)
 
 app.layout = html.Div([
     html.H1("Image Statistics Dashboard"),
     dcc.Upload(
-        d='upload-image',
+        id='upload-image',
         children=html.Div([
             'Drag and Drop or ',
             html.A('Select an Image')
