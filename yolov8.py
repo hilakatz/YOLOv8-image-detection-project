@@ -34,6 +34,9 @@ import ultralytics
 from ultralytics import YOLO
 import tensorflow as tf
 
+from scipy.cluster.vq import whiten
+
+
 # !pip install pyyaml h5py
 
 torch.manual_seed(0)
@@ -278,6 +281,9 @@ if IMAGE_PROPERTIES_FLAG:
                                                              axis=1)
             # image blurriness by model
             dataframe['blurriness'] = dataframe.apply(lambda row: image_utils.get_image_blurriness_by_model(row['image'], model_blurriness), axis=1)
+
+            #dominant color in dataset
+            dataframe['dominant_colors'] = dataframe.apply(lambda row: image_utils.dominant_colors(row['image'], model_blurriness), axis=1)
 
     """ Visualizations """
 
