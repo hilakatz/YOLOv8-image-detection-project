@@ -13,6 +13,16 @@ import functions as utils
 
 import numpy as np
 
+import matplotlib.image as img
+import matplotlib.pyplot as plt
+from scipy.cluster.vq import whiten
+from scipy.cluster.vq import kmeans
+import pandas as pd
+
+import itertools
+
+
+
 
 # convert BGR to RGB
 def BGR2RGB(BGR_img):
@@ -235,20 +245,17 @@ def get_image_blurriness_by_model(image_path, model):
 #https://www.geeksforgeeks.org/extract-dominant-colors-of-an-image-using-python/
 
 def dominant_colors(image_path):
-    import matplotlib.image as img
-    import matplotlib.pyplot as plt
-    from scipy.cluster.vq import whiten
-    from scipy.cluster.vq import kmeans
-    import pandas as pd
-    
     path = utils.repo_image_path(image_path)
     image = cv2.imread(path)
+    # print(image.shape)
 
+    # Store RGB values of all pixels in lists r, g and b
     r = []
     g = []
     b = []
+
     for row in image:
-        for temp_r, temp_g, temp_b, temp in row:
+        for temp_r, temp_g, temp_b in row:
             r.append(temp_r)
             g.append(temp_g)
             b.append(temp_b)
@@ -257,10 +264,13 @@ def dominant_colors(image_path):
                             'green' : g,
                             'blue' : b})
     
+    #scale the DataFrame to get standardized values
     df['scaled_color_red'] = whiten(df['red'])
     df['scaled_color_blue'] = whiten(df['blue'])
     df['scaled_color_green'] = whiten(df['green'])
-    
+
+    #find the number of clusters in k-means using the elbow plot approach
+    # create a list of distortions from the kmeans function
     cluster_centers, _ = kmeans(df[['scaled_color_red',
                                         'scaled_color_blue',
                                         'scaled_color_green']], 3)
@@ -271,6 +281,8 @@ def dominant_colors(image_path):
                                             'green',
                                             'blue']].std()
     
+    #Standardized value = Actual value / Standard Deviation
+    # Get standard deviations of each color
     for cluster_center in cluster_centers:
         red_scaled, green_scaled, blue_scaled = cluster_center
         dominant_colors.append((
@@ -279,15 +291,11 @@ def dominant_colors(image_path):
             blue_scaled * blue_std / 255
         ))
     
-    print(dominant_colors)
+    #print(dominant_colors)
     plt.imshow([dominant_colors])
     plt.show()
 
 
-
-
-import numpy as np
-import itertools
 
 def check_occlusion(bounding_boxes):
     """Checks if there is occlusion between objects in an image.

@@ -1,5 +1,6 @@
 """ Imports """
 import image_properties_functions as image_utils
+import gitignore
 import visualization_utils as visual_utils
 from IPython.display import display
 import functions as utils
@@ -56,7 +57,7 @@ FOLDER_NAME = 'dataframes'
 MODEL_FLAG = 0
 PREDICTION_FLAG = 0
 SAVE_FLAG = 0
-IMAGE_PROPERTIES_FLAG = 0
+IMAGE_PROPERTIES_FLAG = 1
 
 " Predict images and create dataframe if PREDICTION_FLAG is Yes"
 
@@ -244,46 +245,47 @@ model_blurriness.compile(optimizer='adam',
               metrics=['accuracy'])
 
 """ Image properties """
+
 if IMAGE_PROPERTIES_FLAG:
     for key, dataframe in tqdm(df_dict.items()):
         print("Calculating image properties for " + key + " dataset")
-        if key != 'iou_scores':
+        # if key != 'iou_scores':
             # aspect ratio
-            dataframe['aspect_ratio'] = dataframe.apply(lambda row: image_utils.return_aspect_ratio(row['height'], row['width']), axis=1)
-            # brightness
-            dataframe['brightness'] = dataframe.apply(lambda row: image_utils.get_image_brightness(row['image']), axis=1)
-            # image contrast
-            dataframe['contrast'] = dataframe.apply(lambda row: image_utils.get_image_contrast(row['image']), axis=1)
-            # image blurriness
-            dataframe['sharpness'] = dataframe.apply(lambda row: image_utils.get_image_sharpness(row['image']), axis=1)
-            # image noise
-            dataframe['noise'] = dataframe.apply(lambda row: image_utils.get_image_noise(row['image']), axis=1)
-            # image saturation
-            dataframe['saturation'] = dataframe.apply(lambda row: image_utils.get_image_saturation(row['image']), axis=1)
-            # image entropy
-            # The entropy or average information of an image is a measure of the degree of randomness in the image.
-            dataframe['entropy'] = dataframe.apply(lambda row: image_utils.get_image_entropy(row['image']), axis=1)
-            # image edges
-            dataframe['edges'] = dataframe.apply(lambda row: image_utils.edge_detection(row['image']), axis=1)
-            # image estimate noise
-            dataframe['estimate_noise'] = dataframe.apply(lambda row: image_utils.estimate_noise(row['image']), axis=1)
-            # image red channel percentage
-            dataframe['red_channel'] = dataframe.apply(lambda row: image_utils.get_channel_percentage(row['image'], 0),
-                                                       axis=1)
-            # image blue channel percentage
-            dataframe['blue_channel'] = dataframe.apply(lambda row: image_utils.get_channel_percentage(row['image'], 1),
-                                                        axis=1)
-            # image green channel percentage
-            dataframe['green_channel'] = dataframe.apply(lambda row: image_utils.get_channel_percentage(row['image'], 2),
-                                                         axis=1)
-            # image salt and pepper noise
-            dataframe['salt_pepper_noise'] = dataframe.apply(lambda row: image_utils.get_salt_and_pepper_noise(row['image']),
-                                                             axis=1)
-            # image blurriness by model
-            dataframe['blurriness'] = dataframe.apply(lambda row: image_utils.get_image_blurriness_by_model(row['image'], model_blurriness), axis=1)
+            # dataframe['aspect_ratio'] = dataframe.apply(lambda row: image_utils.return_aspect_ratio(row['height'], row['width']), axis=1)
+            # # brightness
+            # dataframe['brightness'] = dataframe.apply(lambda row: image_utils.get_image_brightness(row['image']), axis=1)
+            # # image contrast
+            # dataframe['contrast'] = dataframe.apply(lambda row: image_utils.get_image_contrast(row['image']), axis=1)
+            # # image blurriness
+            # dataframe['sharpness'] = dataframe.apply(lambda row: image_utils.get_image_sharpness(row['image']), axis=1)
+            # # image noise
+            # dataframe['noise'] = dataframe.apply(lambda row: image_utils.get_image_noise(row['image']), axis=1)
+            # # image saturation
+            # dataframe['saturation'] = dataframe.apply(lambda row: image_utils.get_image_saturation(row['image']), axis=1)
+            # # image entropy
+            # # The entropy or average information of an image is a measure of the degree of randomness in the image.
+            # dataframe['entropy'] = dataframe.apply(lambda row: image_utils.get_image_entropy(row['image']), axis=1)
+            # # image edges
+            # dataframe['edges'] = dataframe.apply(lambda row: image_utils.edge_detection(row['image']), axis=1)
+            # # image estimate noise
+            # dataframe['estimate_noise'] = dataframe.apply(lambda row: image_utils.estimate_noise(row['image']), axis=1)
+            # # image red channel percentage
+            # dataframe['red_channel'] = dataframe.apply(lambda row: image_utils.get_channel_percentage(row['image'], 0),
+            #                                            axis=1)
+            # # image blue channel percentage
+            # dataframe['blue_channel'] = dataframe.apply(lambda row: image_utils.get_channel_percentage(row['image'], 1),
+            #                                             axis=1)
+            # # image green channel percentage
+            # dataframe['green_channel'] = dataframe.apply(lambda row: image_utils.get_channel_percentage(row['image'], 2),
+            #                                              axis=1)
+            # # image salt and pepper noise
+            # dataframe['salt_pepper_noise'] = dataframe.apply(lambda row: image_utils.get_salt_and_pepper_noise(row['image']),
+            #                                                  axis=1)
+            # # image blurriness by model
+            # dataframe['blurriness'] = dataframe.apply(lambda row: image_utils.get_image_blurriness_by_model(row['image'], model_blurriness), axis=1)
 
             #dominant color in dataset
-            dataframe['dominant_colors'] = dataframe.apply(lambda row: image_utils.dominant_colors(row['image'], model_blurriness), axis=1)
+            # dataframe['dominant_colors'] = dataframe.apply(lambda row: image_utils.dominant_colors(row['image']), axis=1)
 
     """ Visualizations """
 

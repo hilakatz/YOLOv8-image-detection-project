@@ -1,0 +1,8 @@
+def create_gitignore():
+  """Creates a .gitignore file in the current directory."""
+  with open(".gitignore", "w") as f:
+    f.write("data/\n")
+    f.write("Zebra/\n")
+    f.write("coco128/\n")
+    f.write("Kangaroos/\n")
+    f.write("Mouse/\n")
