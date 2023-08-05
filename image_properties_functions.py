@@ -282,3 +282,78 @@ def dominant_colors(image_path):
     print(dominant_colors)
     plt.imshow([dominant_colors])
     plt.show()
+
+
+
+
+import numpy as np
+import itertools
+
+def check_occlusion(bounding_boxes):
+    """Checks if there is occlusion between objects in an image.
+
+    Args:
+        bounding_boxes: A list of bounding boxes.
+
+    Returns:
+        The percentage of occlusion between objects in an image.
+    """
+
+    array_of_combinations = list(itertools.combinations(bounding_boxes, 2))
+    percentage_of_occlusion = 0
+    for combination in array_of_combinations:
+        intersection_area = calculate_intersection_area(combination[0], combination[1])
+        union_area = calculate_union_area(combination[0], combination[1])
+        percentage_of_occlusion += intersection_area / union_area * 100
+
+    if percentage_of_occlusion > 0:
+        return percentage_of_occlusion / len(array_of_combinations)
+    else:
+        return 0
+
+#the following 3 functions are for occlusion 
+def calculate_intersection_area(bounding_box1, bounding_box2):
+    """Calculates the intersection area between two bounding boxes.
+
+    Args:
+        bounding_box1: A bounding box.
+        bounding_box2: A bounding box.
+
+    Returns:
+        The intersection area between two bounding boxes.
+    """
+
+    intersection_top = max(bounding_box1[0], bounding_box2[0])
+    intersection_left = max(bounding_box1[1], bounding_box2[1])
+    intersection_bottom = min(bounding_box1[2], bounding_box2[2])
+    intersection_right = min(bounding_box1[3], bounding_box2[3])
+    if intersection_bottom <= intersection_top or intersection_right <= intersection_left:
+        return 0
+    else:
+        return (intersection_bottom - intersection_top) * (intersection_right - intersection_left)
+
+def calculate_union_area(bounding_box1, bounding_box2):
+    """Calculates the union area between two bounding boxes.
+
+    Args:
+        bounding_box1: A bounding box.
+        bounding_box2: A bounding box.
+
+    Returns:
+        The union area between two bounding boxes.
+    """
+
+    union_area = calculate_area(bounding_box1) + calculate_area(bounding_box2) - calculate_intersection_area(bounding_box1, bounding_box2)
+    return union_area
+
+def calculate_area(bounding_box):
+    """Calculates the area of a bounding box.
+
+    Args:
+        bounding_box: A bounding box.
+
+    Returns:
+        The area of a bounding box.
+    """
+
+    return (bounding_box[2] - bounding_box[0]) * (bounding_box[3] - bounding_box[1])
