@@ -1,6 +1,5 @@
 """ Imports """
 import image_properties_functions as image_utils
-import gitignore
 import visualization_utils as visual_utils
 from IPython.display import display
 import functions as utils
@@ -245,11 +244,10 @@ model_blurriness.compile(optimizer='adam',
               metrics=['accuracy'])
 
 """ Image properties """
-
 if IMAGE_PROPERTIES_FLAG:
     for key, dataframe in tqdm(df_dict.items()):
         print("Calculating image properties for " + key + " dataset")
-        # if key != 'iou_scores':
+        if key != 'iou_scores':
             # aspect ratio
             # dataframe['aspect_ratio'] = dataframe.apply(lambda row: image_utils.return_aspect_ratio(row['height'], row['width']), axis=1)
             # # brightness
@@ -285,7 +283,7 @@ if IMAGE_PROPERTIES_FLAG:
             # dataframe['blurriness'] = dataframe.apply(lambda row: image_utils.get_image_blurriness_by_model(row['image'], model_blurriness), axis=1)
 
             #dominant color in dataset
-            # dataframe['dominant_colors'] = dataframe.apply(lambda row: image_utils.dominant_colors(row['image']), axis=1)
+            dataframe['dominant_colors'] = dataframe.apply(lambda row: image_utils.dominant_colors(row['image']), axis=1)
 
     """ Visualizations """
 
