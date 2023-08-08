@@ -20,7 +20,7 @@ from matplotlib import pyplot
 from json import loads, dumps
 import xml.etree.ElementTree as ET
 import torchvision.models as models
-
+from PIL import Image, ImageFilter
 
 # change image path to current repo
 def repo_image_path(path_from_repo_root):
@@ -274,3 +274,55 @@ def print_image_by_dataset_and_name(image, data_set_name,model):
 def correlation(df, column1, column2):
     correlation_coefficient = df[[column1, column2]].corr().iloc[0, 1]
     return correlation_coefficient
+
+#Blurs some of the photos in the given dataset directory randomly
+# https://pythonexamples.org/python-pillow-blur-image/
+#TODO: use this function on some of the datasets and look at correlations 
+
+def blur_some_photos(dataset_dir):
+
+  for filename in os.listdir(dataset_dir):
+    # Randomly choose whether or not to blur the photo.
+    should_blur = random.random() > 0.5
+
+    if should_blur:
+      # Open the photo.
+      image = Image.open(os.path.join(dataset_dir, filename))
+
+      # Blur the photo.
+      blurred_image = image.filter(ImageFilter.BLUR)
+
+      # Save the resulting image.
+      blurred_image.save(os.path.join(dataset_dir, filename))
+
+# Adds salt and pepper noise to image
+# https://www.geeksforgeeks.org/python-noise-function-in-wand/
+#TODO: maybe making the dataset random can be a function as it repeates itself
+def noise_some_photos(dataset_dir):
+    for filename in os.listdir(dataset_dir):
+
+    # Randomly choose whether or not to have noise in the photo.
+        added_noise = random.random() > 0.5
+
+        if added_noise:
+            image = Image.open(os.path.join(dataset_dir, filename))
+            noisy_image = image.noise("laplacian", attenuate = 1.0)
+            noisy_image.save(os.path.join(dataset_dir, filename))
+
+#Change colors of image randomly 
+# https://github.com/krakendev35/Color-channel-changer
+#TODO: need to make a copy of the dataset so the original one won't be changed
+def manipulate_color_channels(dataset_dir):
+    for filename in os.listdir(dataset_dir):
+
+        change_channel = random.random() > 0.5
+        if change_channel:
+            im = Image.open(os.path.join(dataset_dir, filename)).convert('RGB')
+            r, g, b = im.split()
+
+            r = r.point(lambda i: i * 0.2)
+            g = g.point(lambda i : i * 0.25)
+            b = b.point(lambda i : i * 3)
+
+            result = Image.merge('RGB', (r,b,b))
+            result.save(os.path.join(dataset_dir, filename))
