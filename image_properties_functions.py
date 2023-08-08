@@ -13,6 +13,13 @@ import functions as utils
 
 import numpy as np
 
+import matplotlib.image as img
+import matplotlib.pyplot as plt
+from scipy.cluster.vq import whiten
+from scipy.cluster.vq import kmeans
+import pandas as pd
+import functions as utils
+
 
 # convert BGR to RGB
 def BGR2RGB(BGR_img):
@@ -230,3 +237,72 @@ def get_image_blurriness_by_model(image_path, model):
     predicted_class = int(np.round(prediction[0][0]))  # Convert prediction to binary value (0 or 1)
 
     return predicted_class
+
+#find dominant color in an image 
+#https://www.geeksforgeeks.org/extract-dominant-colors-of-an-image-using-python/
+#TODO: find the most common combi of colors 
+#TODO: add to the dashboard
+#TODO: make a boxplot of the different combis with a certain range
+
+def dominant_colors(image_path):
+    path = utils.repo_image_path(image_path)
+    image = cv2.imread(path)
+    # print(image.shape)
+
+    # Store RGB values of all pixels in lists r, g and b
+    r = []
+    g = []
+    b = []
+
+    for row in image:
+        for temp_r, temp_g, temp_b in row:
+            r.append(temp_r)
+            g.append(temp_g)
+            b.append(temp_b)
+    
+    df = pd.DataFrame({'red' : r,
+                            'green' : g,
+                            'blue' : b})
+    
+    #scale the DataFrame to get standardized values
+    df['scaled_color_red'] = whiten(df['red'])
+    df['scaled_color_blue'] = whiten(df['blue'])
+    df['scaled_color_green'] = whiten(df['green'])
+
+    #find the number of clusters in k-means using the elbow plot approach
+    # create a list of distortions from the kmeans function
+    cluster_centers, _ = kmeans(df[['scaled_color_red',
+                                        'scaled_color_blue',
+                                        'scaled_color_green']], 3)
+    
+    dominant_colors = []
+    
+    red_std, green_std, blue_std = df[['red',
+                                            'green',
+                                            'blue']].std()
+    
+    #Standardized value = Actual value / Standard Deviation
+    # Get standard deviations of each color
+    for cluster_center in cluster_centers:
+        red_scaled, green_scaled, blue_scaled = cluster_center
+        dominant_colors.append((
+            red_scaled * red_std / 255,
+            green_scaled * green_std / 255,
+            blue_scaled * blue_std / 255
+        ))
+    
+    return (dominant_colors)
+    # plt.imshow([dominant_colors])
+    # plt.show()
+
+
+#check for occlusion
+# TODO: check how to get the annotaions into boxes  
+def check_occlusion(boxes):
+    max_iou = 0 
+    for i in range(len(boxes)):
+        for j in range(i +1, len(boxes)):
+            iou_percentage = utils.bbox_iou(boxes[i], boxes[j])
+            max_iou = max(max_iou, iou_percentage)
+    
+    return max_iou 
