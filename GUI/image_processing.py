@@ -382,17 +382,6 @@ def new_folder_processing(images, image_format):
     return df
 
 
-# def process_images(folder):
-#     # Run your image processing logic here
-#     image_format = 'jpg'  # Adjust the image format as needed
-#     processed_data = new_folder_processing(folder, image_format)
-#     processed_data = run_image_properties(processed_data)
-#
-#     # Store the processed data in a CSV file
-#     csv_path = os.path.join('data', 'processed_data.csv')
-#     print(csv_path)
-#     processed_data.to_csv(csv_path, index=False)
-
 # Entry point
 if __name__ == "__main__":
     if len(sys.argv) != 4:
