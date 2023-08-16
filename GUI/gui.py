@@ -2,12 +2,12 @@ import PySimpleGUI as sg
 import os.path
 import subprocess  # To run your image processing function
 import pandas as pd
-
+IMAGE_FORMAT = None
 # Define your image processing function here
-def process_images(folder, database_name):
+def process_images(folder, database_name, image_format):
     # Run your image processing function using the provided folder path
     # Replace this with your actual image processing logic
-    subprocess.run(['python', 'image_processing.py', folder, database_name])
+    subprocess.run(['python', 'image_processing.py', folder, database_name, image_format])
 
 def run_dashboard(selected_database):
     # Run your dashboard code here
@@ -25,6 +25,9 @@ def delete_files_in_data_folder():
             print(f"Error deleting file {file_path}: {e}")
 
 def get_processed_databases():
+    # check if the data folder exists, if not create it
+    if not os.path.exists("data"):
+        os.makedirs("data")
     data_folder = "data"
     processed_databases = [
         f for f in os.listdir(data_folder) if f.endswith(".csv")
@@ -90,6 +93,7 @@ while True:
             if os.path.isfile(os.path.join(folder, f))
             and f.lower().endswith((".png", ".gif", ".jpg"))
         ]
+        IMAGE_FORMAT = fnames[0].split(".")[-1]
         window["-FILE LIST-"].update(fnames)
 
     elif event == "-PROCESS-":
@@ -99,7 +103,7 @@ while True:
             database_name = sg.popup_get_text("Enter a name for the database:")
             if database_name:
                 # Call your image processing function
-                process_images(selected_folder,database_name)
+                process_images(selected_folder,database_name, IMAGE_FORMAT)
                 sg.popup("Image processing completed!", title="Process Images")
         # Update the list of processed images
         window["-CSV LIST-"].update(values=get_processed_databases())
