@@ -382,29 +382,34 @@ def new_folder_processing(images, image_format):
     return df
 
 
-def process_images(folder):
-    # Run your image processing logic here
-    image_format = 'jpg'  # Adjust the image format as needed
-    processed_data = new_folder_processing(folder, image_format)
-    processed_data = run_image_properties(processed_data)
-
-    # Store the processed data in a CSV file
-    csv_path = os.path.join('data', 'processed_data.csv')
-    print(csv_path)
-    processed_data.to_csv(csv_path, index=False)
+# def process_images(folder):
+#     # Run your image processing logic here
+#     image_format = 'jpg'  # Adjust the image format as needed
+#     processed_data = new_folder_processing(folder, image_format)
+#     processed_data = run_image_properties(processed_data)
+#
+#     # Store the processed data in a CSV file
+#     csv_path = os.path.join('data', 'processed_data.csv')
+#     print(csv_path)
+#     processed_data.to_csv(csv_path, index=False)
 
 # Entry point
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python image_processing.py <folder_path>")
+    if len(sys.argv) != 4:
+        print("Usage: python image_processing.py <folder_path> <database_name> <image_format>")
         sys.exit(1)
 
     folder_path = sys.argv[1]
     database_name = sys.argv[2]
+    image_format = sys.argv[3]
 
     # Run image processing functions
-    processed_data = new_folder_processing(folder_path, "jpg")  # Change image format if needed
+    processed_data = new_folder_processing(folder_path, image_format)  # Change image format if needed
     processed_data = run_image_properties(processed_data)
+
+    # check if "data" folder exists - if not, create it
+    if not os.path.exists("data"):
+        os.makedirs("data")
 
     # Store the processed data in a CSV file
     csv_path = os.path.join("data",   f"{database_name}.csv")
