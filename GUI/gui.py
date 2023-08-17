@@ -77,7 +77,7 @@ while True:
     event, values = window.read()
 
     if event == sg.WIN_CLOSED or event == "Exit":
-        delete_files_in_data_folder()
+        # delete_files_in_data_folder()
         break
 
     if event == "-FOLDER-":
