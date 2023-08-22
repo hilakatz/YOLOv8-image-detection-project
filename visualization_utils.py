@@ -3,7 +3,7 @@ import pandas as pd
 import seaborn as sns
 
 
-def histogram(df, column_name):
+def histogram(df, column_name, df_name):
     column = df[column_name]
 
     if not pd.api.types.is_numeric_dtype(column):
@@ -28,8 +28,9 @@ def histogram(df, column_name):
     plt.hist(column, bins='auto')
     plt.xlabel(column_name)
     plt.ylabel('Frequency')
-    plt.title('Histogram of {}'.format(column_name))
-    plt.show()
+    plt.title(f'Histogram of {column_name} - {df_name} dataset')
+    plt.savefig(f'histogram of {column_name} - {df_name} dataset.png')
+    plt.clf()  # Clear the figure to release memory
 
 
 def scatter_plot_correlation(df, column1, column2):

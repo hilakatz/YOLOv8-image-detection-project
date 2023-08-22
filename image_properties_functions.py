@@ -2,12 +2,13 @@
 
 # imports
 import math
-
+import os
 import cv2
 import skimage
 from cv2 import IMREAD_COLOR, IMREAD_UNCHANGED
 from PIL import Image, ImageStat
 from scipy.signal import convolve2d
+from PIL import Image, ImageFilter
 
 import functions as utils
 
@@ -305,4 +306,20 @@ def check_occlusion(boxes):
             iou_percentage = utils.bbox_iou(boxes[i], boxes[j])
             max_iou = max(max_iou, iou_percentage)
     
-    return max_iou 
+    return max_iou
+
+def blur_some_photos(image_path, name):
+    path = utils.repo_image_path(image_path)
+    image = cv2.imread(path)
+    image = Image.open(path)
+    # Blur the photo.
+    blurred_image = image.filter(ImageFilter.BLUR)
+
+    # Open folder to save the blurred image.
+    if not os.path.exists("Zebra_modified"):
+        os.makedirs("Zebra_modified")
+
+    # Save the resulting image.
+
+    blurred_image.save(f"Zebra_modified/{name}")
+    return f"/Zebra_modified/{name}"
