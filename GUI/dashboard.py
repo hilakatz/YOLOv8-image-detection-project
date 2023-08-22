@@ -9,7 +9,7 @@ IMAGE_PROPERTIES = ['aspect_ratio', 'brightness', 'contrast', 'sharpness', 'nois
 
 def plot_histogram(data_series,selected_column):
     sns.set(style="whitegrid")
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(8, 5))
     sns.histplot(data_series, kde=True)
     plt.xlabel("Value")
     plt.ylabel("Frequency")
@@ -30,12 +30,12 @@ def run_dashboard(data_path, iou_path, baseline_data_path):
 
     baseline_data = pd.read_csv(baseline_data_path)
     columns_to_present = [column for column in processed_data.columns if column in IMAGE_PROPERTIES]
-
+    stat = ""
     # Update the layout to include the histogram section
     layout = [
-        [sg.Text(f"IOU Score: {iou} ", key="-IOU-SCORE-")],
-        [sg.Text("Select two columns for correlation plot, or just one from the left for histogram plot:")],
-        [sg.Listbox(columns_to_present, size=(30, 6), key="-COLUMN1-", enable_events=True), sg.Listbox(columns_to_present, size=(30, 6), key="-COLUMN2-", enable_events=True)],
+        [sg.Frame("IOU Score", [[sg.Text(f"{iou}", key="-IOU-SCORE-")]])],
+        [sg.Text("Select two columns for correlation plot, \n or just one from the left for histogram plot:     "), sg.Text(f"     {stat} Statistics Table:", key="-STATISTICS-TABLE-NAME-")],
+        [sg.Listbox(columns_to_present, size=(15, 6), key="-COLUMN1-", enable_events=True), sg.Listbox(columns_to_present, size=(15, 6), key="-COLUMN2-", enable_events=True), sg.VSeparator(), sg.Table(values=[],size=(100, 6), headings=["Statistic", "Processed Value", "Baseline Value"], key="-STATISTICS-TABLE-")],
         [sg.Button("Generate Correlation Plot"), sg.Button("Generate Histogram"), sg.Button("Exit"), sg.Checkbox("Show Baseline", key="-SHOW-HISTOGRAM-", enable_events=True)],
         [sg.Image(key="-PLOT-", size=(800, 600))],
     ]
@@ -77,18 +77,32 @@ def run_dashboard(data_path, iou_path, baseline_data_path):
             show_histogram = values["-SHOW-HISTOGRAM-"]
 
         elif event == "Generate Histogram":
+            selected_column = values["-COLUMN1-"][0]  # Choose the column for the histogram
+            window["-STATISTICS-TABLE-NAME-"].update(value=f"     {selected_column} Statistics Table:")
+            selected_column_data = processed_data[selected_column]
+            # Update the values for the corresponding statistics in the table
+            window["-STATISTICS-TABLE-"].update(values=[
+                ["Count", selected_column_data.count(), ""],
+                ["Mean", selected_column_data.mean(), ""],
+                ["Median", selected_column_data.median(), ""],
+                ["Minimum", selected_column_data.min(), ""],
+                ["Maximum", selected_column_data.max(), ""],
+                ["Standard Deviation", selected_column_data.std(), ""]
+            ])
             if show_histogram:
-                selected_column = values["-COLUMN1-"][0]  # Choose the column for the histogram
-                selected_column_data = processed_data[selected_column]
                 baseline_column_data = baseline_data[selected_column]
-
-                # Calculate histograms for both datasets
-                selected_column_hist = selected_column_data.value_counts().sort_index()
-                baseline_column_hist = baseline_column_data.value_counts().sort_index()
+                window["-STATISTICS-TABLE-"].update(values=[
+                    ["Count", selected_column_data.count(), baseline_column_data.count()],
+                    ["Mean", selected_column_data.mean(), baseline_column_data.mean()],
+                    ["Median", selected_column_data.median(), baseline_column_data.median()],
+                    ["Minimum", selected_column_data.min(), baseline_column_data.min()],
+                    ["Maximum", selected_column_data.max(), baseline_column_data.max()],
+                    ["Standard Deviation", selected_column_data.std(), baseline_column_data.std()]
+                ])
 
                 # Plot histograms
                 sns.set(style="whitegrid")
-                plt.figure(figsize=(8, 6))
+                plt.figure(figsize=(8, 5))
                 sns.histplot(selected_column_data, kde=True,  label="Processed Data")
                 sns.histplot(baseline_column_data, kde=True, label="Baseline Data")
                 plt.xlabel("Value")
@@ -104,8 +118,6 @@ def run_dashboard(data_path, iou_path, baseline_data_path):
                 window["-PLOT-"].update(filename=temp_histogram_plot)
                 plt.clf()
             else:
-                selected_column = values["-COLUMN1-"][0]  # Choose the column for the histogram
-                selected_column_data = processed_data[selected_column]
                 histogram_plot_path = plot_histogram(selected_column_data, selected_column)
                 # Update the Image element with the new histogram plot
                 window["-PLOT-"].update(filename=histogram_plot_path)
