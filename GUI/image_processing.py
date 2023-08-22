@@ -361,39 +361,40 @@ def run_image_properties(dataframe):
 
     return dataframe
 
-def api_pipeline(dataset_path, image_format, model, color = None):
-    df_images = utils.create_df(dataset_path, image_format, model, color)
+#
+# def api_pipeline(dataset_path, image_format, model, color = None):
+#     df_images = utils.create_df(dataset_path, image_format, model, color)
+#
+#     df_images['relative_boxes'] = df_images.apply(
+#     lambda row: utils.boxes_abs_to_relative(row['boxes'], row['height'], row['width']), axis = 1)
+#
+#     df_images = df_images.set_index('name')
+#
+#     return df_images
 
-    df_images['relative_boxes'] = df_images.apply(
-    lambda row: utils.boxes_abs_to_relative(row['boxes'], row['height'], row['width']), axis = 1)
 
-    df_images = df_images.set_index('name')
-
-    return df_images
-
-def new_folder_processing(images, image_format):
+def new_folder_processing(name, image_path, annotations_path, image_format, annotations_format):
     model_trained = YOLO(utils.repo_image_path('/best.torchscript'), task='detect')
 
     ''' Predict New Dataset '''
-
-    images_path = images
-
-    df = api_pipeline(images_path, image_format, model_trained)
-    return df
+    df, iou = utils.pipeline(name, image_path, annotations_path, image_format, model_trained, annotations_format)
+    return df, iou
 
 
 # Entry point
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        print("Usage: python image_processing.py <folder_path> <database_name> <image_format>")
+    if len(sys.argv) != 6:
+        print("Usage: python image_processing.py <image_folder_path> <annotations_folder_path> < <database_name> <image_format> <annotations_format>")
         sys.exit(1)
 
-    folder_path = sys.argv[1]
-    database_name = sys.argv[2]
-    image_format = sys.argv[3]
+    image_folder_path = sys.argv[1]
+    annotations_folder_path = sys.argv[2]
+    database_name = sys.argv[3]
+    image_format = sys.argv[4]
+    annotations_format = sys.argv[5]
 
     # Run image processing functions
-    processed_data = new_folder_processing(folder_path, image_format)  # Change image format if needed
+    processed_data, iou = new_folder_processing(database_name, image_folder_path, annotations_folder_path, image_format, annotations_format)  # Change image format if needed
     processed_data = run_image_properties(processed_data)
 
     # check if "data" folder exists - if not, create it
@@ -401,6 +402,11 @@ if __name__ == "__main__":
         os.makedirs("data")
 
     # Store the processed data in a CSV file
-    csv_path = os.path.join("data",   f"{database_name}.csv")
+    csv_path = os.path.join("data", f"{database_name}.csv")
     processed_data.to_csv(csv_path, index=False)
+
+    # Store the iou in a text file
+    iou_path = os.path.join("data", f"{database_name}.txt")
+    with open(iou_path, 'w') as f:
+        f.write(str(iou))
 

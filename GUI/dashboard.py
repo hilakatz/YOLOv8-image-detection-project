@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import sys
 import os
 
+IMAGE_PROPERTIES = ['aspect_ratio', 'brightness', 'contrast', 'sharpness', 'noise', 'saturation', 'entropy', 'edges', 'estimate_noise', 'red_channel', 'blue_channel', 'green_channel','salt_pepper_noise','blurriness']
+
 def plot_histogram(data_series,selected_column):
     sns.set(style="whitegrid")
     plt.figure(figsize=(8, 6))
@@ -18,18 +20,22 @@ def plot_histogram(data_series,selected_column):
     plt.clf()  # Clear the figure to release memory
     return temp_histogram_plot
 
+
 # Function to run the dashboard
-def run_dashboard(data_path, baseline_data_path):
+def run_dashboard(data_path, iou_path, baseline_data_path):
     # Load the processed data from the CSV file
     processed_data = pd.read_csv(data_path)
+    with open(f'data/{iou_path}.txt','r') as f:
+        iou = f.read()
 
     baseline_data = pd.read_csv(baseline_data_path)
+    columns_to_present = [column for column in processed_data.columns if column in IMAGE_PROPERTIES]
 
     # Update the layout to include the histogram section
     layout = [
-        [sg.Text("Select two columns for correlation plot:")],
-        [sg.Listbox(processed_data.columns, size=(30, 6), key="-COLUMN1-", enable_events=True)],
-        [sg.Listbox(processed_data.columns, size=(30, 6), key="-COLUMN2-", enable_events=True)],
+        [sg.Text(f"IOU Score: {iou} ", key="-IOU-SCORE-")],
+        [sg.Text("Select two columns for correlation plot, or just one from the left for histogram plot:")],
+        [sg.Listbox(columns_to_present, size=(30, 6), key="-COLUMN1-", enable_events=True), sg.Listbox(columns_to_present, size=(30, 6), key="-COLUMN2-", enable_events=True)],
         [sg.Button("Generate Correlation Plot"), sg.Button("Generate Histogram"), sg.Button("Exit"), sg.Checkbox("Show Baseline", key="-SHOW-HISTOGRAM-", enable_events=True)],
         [sg.Image(key="-PLOT-", size=(800, 600))],
     ]
@@ -114,12 +120,13 @@ def run_dashboard(data_path, baseline_data_path):
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Usage: python image_processing.py <folder_path>")
+        print("Usage: python dashboard.py <folder_path>")
         sys.exit(1)
 
     data_path = sys.argv[1]
+    iou = os.path.splitext(data_path)[0]
     # Path to the processed data CSV file
     data_path = f"data/{data_path}"
 
     # Run the dashboard
-    run_dashboard(data_path, baseline_data_path="data/coco128.csv")
+    run_dashboard(data_path, iou, baseline_data_path="data/coco128.csv")
