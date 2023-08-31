@@ -3,6 +3,7 @@
 # imports
 import math
 import os
+import random
 import cv2
 import skimage
 from cv2 import IMREAD_COLOR, IMREAD_UNCHANGED
@@ -21,6 +22,9 @@ from scipy.cluster.vq import kmeans
 import pandas as pd
 import functions as utils
 
+from PIL import Image, ImageFilter
+
+from sklearn.cluster import MiniBatchKMeans
 
 # convert BGR to RGB
 def BGR2RGB(BGR_img):
@@ -245,7 +249,7 @@ def get_image_blurriness_by_model(image_path, model):
 #TODO: add to the dashboard
 #TODO: make a boxplot of the different combis with a certain range
 
-def dominant_colors(image_path):
+def slower_dominant_colors(image_path):
     path = utils.repo_image_path(image_path)
     image = cv2.imread(path)
     # print(image.shape)
@@ -296,6 +300,27 @@ def dominant_colors(image_path):
     # plt.imshow([dominant_colors])
     # plt.show()
 
+def dominant_colors(image_path):
+    path = utils.repo_image_path(image_path)
+    image = cv2.imread(path)
+    
+    # Convert the image to RGB
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+    # Get the RGB values of all pixels in an array
+    rgb_values = np.array(image)
+
+    # Scale the RGB values to get standardized values
+    scaled_rgb_values = whiten(rgb_values)
+
+    # Find the number of clusters in k-means using the elbow plot approach
+    cluster_centers, _ = MiniBatchKMeans(n_clusters=3).fit(scaled_rgb_values)
+
+    # Get the dominant colors
+    dominant_colors = cluster_centers.astype('uint8')
+
+    return dominant_colors
+
 
 #check for occlusion
 # TODO: check how to get the annotaions into boxes  
@@ -308,18 +333,70 @@ def check_occlusion(boxes):
     
     return max_iou
 
-def blur_some_photos(image_path, name):
-    path = utils.repo_image_path(image_path)
-    image = cv2.imread(path)
-    image = Image.open(path)
-    # Blur the photo.
-    blurred_image = image.filter(ImageFilter.BLUR)
+# def blur_some_photos_hila(image_path, name):
+#     path = utils.repo_image_path(image_path)
+#     image = cv2.imread(path)
+#     image = Image.open(path)
+#     # Blur the photo.
+#     blurred_image = image.filter(ImageFilter.BLUR)
 
-    # Open folder to save the blurred image.
-    if not os.path.exists("Zebra_modified"):
-        os.makedirs("Zebra_modified")
+#     # Open folder to save the blurred image.
+#     if not os.path.exists("Zebra_modified"):
+#         os.makedirs("Zebra_modified")
 
-    # Save the resulting image.
+#     # Save the resulting image.
 
-    blurred_image.save(f"Zebra_modified/{name}")
-    return f"/Zebra_modified/{name}"
+#     blurred_image.save(f"Zebra_modified/{name}")
+#     return f"/Zebra_modified/{name}"
+
+#Blurs some of the photos in the given dataset directory randomly
+# https://pythonexamples.org/python-pillow-blur-image/
+#TODO: use this function on some of the datasets and look at correlations 
+
+def blur_some_photos(dataset_dir):
+
+  for filename in os.listdir(dataset_dir):
+    # Randomly choose whether or not to blur the photo.
+    should_blur = random.random() > 0.5
+
+    if should_blur:
+      # Open the photo.
+      image = Image.open(os.path.join(dataset_dir, filename))
+
+      # Blur the photo.
+      blurred_image = image.filter(ImageFilter.BLUR)
+
+      # Save the resulting image.
+      blurred_image.save(os.path.join(dataset_dir, filename))
+
+# Adds salt and pepper noise to image
+# https://www.geeksforgeeks.org/python-noise-function-in-wand/
+#TODO: maybe making the dataset random can be a function as it repeates itself
+def noise_some_photos(dataset_dir):
+    for filename in os.listdir(dataset_dir):
+
+    # Randomly choose whether or not to have noise in the photo.
+        added_noise = random.random() > 0.5
+
+        if added_noise:
+            image = Image.open(os.path.join(dataset_dir, filename))
+            noisy_image = image.noise("laplacian", attenuate = 1.0)
+            noisy_image.save(os.path.join(dataset_dir, filename))
+
+#Change colors of image randomly 
+# https://github.com/krakendev35/Color-channel-changer
+#TODO: need to make a copy of the dataset so the original one won't be changed
+def manipulate_color_channels(dataset_dir):
+    for filename in os.listdir(dataset_dir):
+
+        change_channel = random.random() > 0.5
+        if change_channel:
+            im = Image.open(os.path.join(dataset_dir, filename)).convert('RGB')
+            r, g, b = im.split()
+
+            r = r.point(lambda i: i * 0.2)
+            g = g.point(lambda i : i * 0.25)
+            b = b.point(lambda i : i * 3)
+
+            result = Image.merge('RGB', (r,b,b))
+            result.save(os.path.join(dataset_dir, filename))
