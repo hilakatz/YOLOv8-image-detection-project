@@ -56,7 +56,9 @@ FOLDER_NAME = 'dataframes'
 MODEL_FLAG = 0
 PREDICTION_FLAG = 0
 SAVE_FLAG = 0
-IMAGE_PROPERTIES_FLAG = 1
+IMAGE_PROPERTIES_FLAG = 0
+MODIFIED_DF_SAVE_FLAG = 0
+MODIFIED_DF_STATISTICS_FLAG = 0
 
 " Predict images and create dataframe if PREDICTION_FLAG is Yes"
 
@@ -216,7 +218,7 @@ if PREDICTION_FLAG:
 
 if SAVE_FLAG:
 
-    # Convert dictionary to DataFrame
+    # This function takes a dictionary of IOUs as input and converts it to a Pandas DataFrame
     iou_df = pd.DataFrame(iou_dict, index=[0])
 
     df_list = [df_coco, df_mouse, df_zebra, df_windows, df_kangaroos, iou_df]
@@ -227,7 +229,7 @@ if SAVE_FLAG:
 
 """ Load dataframes """
 
-csv_list = ['kangaroos', 'mouse', 'windows', 'zebra', 'iou_scores']
+csv_list = ['coco128','kangaroos', 'mouse', 'windows', 'zebra', 'iou_scores']
 df_dict = {}
 print("Loading dataframes...")
 for csv_file in csv_list:
@@ -282,12 +284,29 @@ if IMAGE_PROPERTIES_FLAG:
             # image blurriness by model
             dataframe['blurriness'] = dataframe.apply(lambda row: image_utils.get_image_blurriness_by_model(row['image'], model_blurriness), axis=1)
 
-            #dominant color in dataset
-            dataframe['dominant_colors'] = dataframe.apply(lambda row: image_utils.dominant_colors(row['image']), axis=1)
+            # dominant color in dataset
+            # dataframe['dominant_colors'] = dataframe.apply(lambda row: image_utils.dominant_colors(row['image']), axis=1)
 
     """ Visualizations """
+    image_properties_list = ['aspect_ratio', 'brightness', 'contrast', 'sharpness', 'noise', 'saturation', 'entropy', 'edges', 'estimate_noise', 'red_channel', 'blue_channel', 'green_channel','salt_pepper_noise','blurriness']
+    for key, dataframe in tqdm(df_dict.items()):
+        print("Plotting histograms for " + key + " dataset")
+        if key != 'iou_scores':
+            visual_utils.histogram(df_dict[key], 'aspect_ratio',key)
+            visual_utils.histogram(df_dict[key], 'brightness',key)
+            visual_utils.histogram(df_dict[key], 'contrast',key)
+            visual_utils.histogram(df_dict[key], 'sharpness',key)
+            visual_utils.histogram(df_dict[key], 'noise',key)
+            visual_utils.histogram(df_dict[key], 'saturation',key)
+            visual_utils.histogram(df_dict[key], 'entropy',key)
+            visual_utils.histogram(df_dict[key], 'edges',key)
+            visual_utils.histogram(df_dict[key], 'estimate_noise',key)
+            visual_utils.histogram(df_dict[key], 'red_channel',key)
+            visual_utils.histogram(df_dict[key], 'blue_channel',key)
+            visual_utils.histogram(df_dict[key], 'green_channel',key)
+            visual_utils.histogram(df_dict[key], 'salt_pepper_noise',key)
+            visual_utils.histogram(df_dict[key], 'blurriness',key)
 
-    # visual_utils.histogram(df_dict['windows'], 'edges')
     # visual_utils.scatter_plot_correlation(df_dict['windows'], 'avg_score', 'edges')
 
     for key, dataframe in tqdm(df_dict.items()):
@@ -318,4 +337,106 @@ if IMAGE_PROPERTIES_FLAG:
 
     # Display the HTML in a web browser
     with open('styled_corr.html', 'w') as f:
+        f.write(html)
+
+""" Damaged Dataframe statistics """
+if MODIFIED_DF_SAVE_FLAG:
+
+    #TODO: copy a given df, blur/change channels/etc afterwards and find new IOU
+    
+    # Create a new directory called mouse_corrupted
+    os.mkdir('mouse_corrupted')
+
+    # Copy the contents of the mouse directory to the mouse_corrupted directory
+    shutil.copytree('mouse', 'mouse_corrupted', dirs_exist_ok=True)
+
+    # Copy the df_mouse DataFrame to a new DataFrame called df_mouse_corrupted
+    df_mouse_corrupted = df_mouse.copy()
+
+    #TODO: create a path 
+    mouse_corrupted_path = './mouse_corrupted/images'
+
+    image_utils.blur_some_photos(mouse_corrupted_path)
+
+ 
+    # damaged_df = pd.DataFrame()
+    # model_trained = YOLO(utils.repo_image_path('/best.torchscript'), task='detect')
+
+    # for key, dataframe in tqdm(df_dict.items()):
+    #     if key == 'zebra':
+    #         damaged_df = dataframe
+    #         damaged_df['image'] = dataframe.apply(lambda row: image_utils.blur_some_photos(row['image'], row['name']), axis=1)
+
+    # zebra_image_path = utils.repo_image_path('/Zebra_modified')
+    # zebra_annos_dir = utils.repo_image_path('/Zebra/annotations')
+
+    # df_zebra_blurred, zebra_blurred_iou = utils.pipeline('zebra_modified', zebra_image_path, zebra_annos_dir, 'jpg', model_trained)
+    # df_zebra_blurred['image'] = df_zebra_blurred.apply(lambda row: '/Zebra_modified/' + str(row.name), axis=1)
+    # df_zebra_blurred.to_csv(utils.repo_image_path('/' + FOLDER_NAME + '/modified_zebra.csv'))
+    # print("modified iou: " + str(zebra_blurred_iou))
+    
+    
+    # # aspect ratio
+    # df_zebra_blurred['aspect_ratio'] = df_zebra_blurred.apply(
+    #             lambda row: image_utils.return_aspect_ratio(row['height'], row['width']), axis=1)
+    # # brightness
+    # df_zebra_blurred['brightness'] = df_zebra_blurred.apply(lambda row: image_utils.get_image_brightness(row['image']),
+    #                                                   axis=1)
+    # # image contrast
+    # df_zebra_blurred['contrast'] = df_zebra_blurred.apply(lambda row: image_utils.get_image_contrast(row['image']), axis=1)
+    # # image blurriness
+    # df_zebra_blurred['sharpness'] = df_zebra_blurred.apply(lambda row: image_utils.get_image_sharpness(row['image']), axis=1)
+    # # image noise
+    # df_zebra_blurred['noise'] = df_zebra_blurred.apply(lambda row: image_utils.get_image_noise(row['image']), axis=1)
+    # # image saturation
+    # df_zebra_blurred['saturation'] = df_zebra_blurred.apply(lambda row: image_utils.get_image_saturation(row['image']),
+    #                                                   axis=1)
+    # # image entropy
+    # # The entropy or average information of an image is a measure of the degree of randomness in the image.
+    # df_zebra_blurred['entropy'] = df_zebra_blurred.apply(lambda row: image_utils.get_image_entropy(row['image']), axis=1)
+    # # image edges
+    # df_zebra_blurred['edges'] = df_zebra_blurred.apply(lambda row: image_utils.edge_detection(row['image']), axis=1)
+    # # image estimate noise
+    # df_zebra_blurred['estimate_noise'] = df_zebra_blurred.apply(lambda row: image_utils.estimate_noise(row['image']), axis=1)
+    # # image red channel percentage
+    # df_zebra_blurred['red_channel'] = df_zebra_blurred.apply(lambda row: image_utils.get_channel_percentage(row['image'], 0),
+    #                                                    axis=1)
+    # # image blue channel percentage
+    # df_zebra_blurred['blue_channel'] = df_zebra_blurred.apply(lambda row: image_utils.get_channel_percentage(row['image'], 1),
+    #                                                     axis=1)
+    # # image green channel percentage
+    # df_zebra_blurred['green_channel'] = df_zebra_blurred.apply(
+    #             lambda row: image_utils.get_channel_percentage(row['image'], 2),
+    #             axis=1)
+    # # image salt and pepper noise
+    # df_zebra_blurred['salt_pepper_noise'] = df_zebra_blurred.apply(
+    #             lambda row: image_utils.get_salt_and_pepper_noise(row['image']),
+    #             axis=1)
+    # # image blurriness by model
+    # df_zebra_blurred['blurriness'] = df_zebra_blurred.apply(
+    #             lambda row: image_utils.get_image_blurriness_by_model(row['image'], model_blurriness), axis=1)
+
+    # df_zebra_blurred.to_csv(utils.repo_image_path('/' + FOLDER_NAME + '/blurred_zebra.csv'))
+
+if MODIFIED_DF_STATISTICS_FLAG:
+    df = pd.read_csv(utils.repo_image_path('/' + FOLDER_NAME + '/blurred_zebra.csv'))
+    image_properties_list = ['aspect_ratio', 'brightness', 'contrast', 'sharpness', 'noise', 'saturation', 'entropy', 'edges', 'estimate_noise', 'red_channel', 'blue_channel', 'green_channel','salt_pepper_noise','blurriness']
+
+    # statistics:
+    row_data = {'name': 'modified_zebra'}
+    for column in image_properties_list:
+        visual_utils.histogram(df, column, 'modified_zebra')
+        correlation = utils.correlation(df, 'avg_score', column)
+        corr_df_data = []
+        row_data[column] = correlation
+    corr_df = pd.DataFrame([row_data])
+    corr_df.to_csv(utils.repo_image_path('/corr_modified.csv'))
+    # show corr_df as html
+    styled_corr_df = corr_df.style.background_gradient(cmap='coolwarm')
+
+    # Render the styled DataFrame as HTML
+    html = styled_corr_df.render()
+
+    # Display the HTML in a web browser
+    with open('styled_modified_corr.html', 'w') as f:
         f.write(html)
