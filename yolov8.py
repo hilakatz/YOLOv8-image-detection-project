@@ -57,8 +57,8 @@ MODEL_FLAG = 0
 PREDICTION_FLAG = 0
 SAVE_FLAG = 0
 IMAGE_PROPERTIES_FLAG = 0
-MODIFIED_DF_SAVE_FLAG = 1
-MODIFIED_DF_STATISTICS_FLAG = 1
+MODIFIED_DF_SAVE_FLAG = 0
+MODIFIED_DF_STATISTICS_FLAG = 0
 
 " Predict images and create dataframe if PREDICTION_FLAG is Yes"
 
@@ -347,7 +347,13 @@ if MODIFIED_DF_SAVE_FLAG:
     for key, dataframe in tqdm(df_dict.items()):
         if key == 'zebra':
             damaged_df = dataframe
-            damaged_df['image'] = dataframe.apply(lambda row: image_utils.blur_some_photos(row['image'], row['name']), axis=1)
+            damaged_df['random'] = np.random.rand(len(damaged_df))
+            damaged_df['image'] = dataframe.apply(lambda row: image_utils.blur_some_photos(row['random'], row['image'], row['name']), axis=1)
+            damaged_df['random'] = np.random.rand(len(damaged_df))
+            damaged_df['image'] = dataframe.apply(lambda row: image_utils.noise_some_photos(row['random'], row['image'], row['name']), axis=1)
+            damaged_df['random'] = np.random.rand(len(damaged_df))
+            damaged_df['image'] = dataframe.apply(lambda row: image_utils.brightness_some_photos(row['random'], row['image'], row['name']), axis=1)
+
 
 
     zebra_image_path = utils.repo_image_path('/Zebra_modified')
@@ -397,10 +403,10 @@ if MODIFIED_DF_SAVE_FLAG:
     df_zebra_blurred['blurriness'] = df_zebra_blurred.apply(
                 lambda row: image_utils.get_image_blurriness_by_model(row['image'], model_blurriness), axis=1)
 
-    df_zebra_blurred.to_csv(utils.repo_image_path('/' + FOLDER_NAME + '/blurred_zebra.csv'))
+    df_zebra_blurred.to_csv(utils.repo_image_path('/' + FOLDER_NAME + '/modified_zebra.csv'))
 
 if MODIFIED_DF_STATISTICS_FLAG:
-    df = pd.read_csv(utils.repo_image_path('/' + FOLDER_NAME + '/blurred_zebra.csv'))
+    df = pd.read_csv(utils.repo_image_path('/' + FOLDER_NAME + '/modified_zebra.csv'))
     image_properties_list = ['aspect_ratio', 'brightness', 'contrast', 'sharpness', 'noise', 'saturation', 'entropy', 'edges', 'estimate_noise', 'red_channel', 'blue_channel', 'green_channel','salt_pepper_noise','blurriness']
 
     # statistics:
