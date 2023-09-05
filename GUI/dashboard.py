@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import sys
 import os
 
-IMAGE_PROPERTIES = ['aspect_ratio', 'brightness', 'contrast', 'sharpness', 'noise', 'saturation', 'entropy', 'edges', 'estimate_noise', 'red_channel', 'blue_channel', 'green_channel','salt_pepper_noise','blurriness']
+IMAGE_PROPERTIES = ['iou', 'aspect_ratio', 'brightness', 'contrast', 'sharpness', 'noise', 'saturation', 'entropy', 'edges', 'estimate_noise', 'red_channel', 'blue_channel', 'green_channel','salt_pepper_noise','blurriness']
 
 def plot_histogram(data_series,selected_column):
     sns.set(style="whitegrid")
@@ -29,6 +29,8 @@ def run_dashboard(data_path, iou_path, baseline_data_path):
         iou = f.read()
 
     baseline_data = pd.read_csv(baseline_data_path)
+    # Change avg_score name to iou_score for readability
+    processed_data.rename(columns={"avg_score": "iou"}, inplace=True)
     columns_to_present = [column for column in processed_data.columns if column in IMAGE_PROPERTIES]
     stat = ""
     # Update the layout to include the histogram section
