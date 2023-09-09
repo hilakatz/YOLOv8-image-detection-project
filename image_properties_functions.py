@@ -394,3 +394,32 @@ def brightness_some_photos(rand_num, image_path, name):
     else:
         image.save(f"Zebra_modified/{name}")
     return f"/Zebra_modified/{name}"
+
+
+def calculate_image_properties(df, model_blurriness):
+  """
+  Calculates the image properties for the given dataframe.
+
+  Args:
+    df: The dataframe to calculate the image properties for.
+
+  Returns:
+    The dataframe with the image properties added.
+  """
+
+  df['aspect_ratio'] = df.apply(lambda row: return_aspect_ratio(row['height'], row['width']), axis=1)
+  df['brightness'] = df.apply(lambda row: get_image_brightness(row['image']), axis=1)
+  df['contrast'] = df.apply(lambda row: get_image_contrast(row['image']), axis=1)
+  df['sharpness'] = df.apply(lambda row: get_image_sharpness(row['image']), axis=1)
+  df['noise'] = df.apply(lambda row: get_image_noise(row['image']), axis=1)
+  df['saturation'] = df.apply(lambda row: get_image_saturation(row['image']), axis=1)
+  df['entropy'] = df.apply(lambda row: get_image_entropy(row['image']), axis=1)
+  df['edges'] = df.apply(lambda row: edge_detection(row['image']), axis=1)
+  df['estimate_noise'] = df.apply(lambda row: estimate_noise(row['image']), axis=1)
+  df['red_channel'] = df.apply(lambda row: get_channel_percentage(row['image'], 0), axis=1)
+  df['blue_channel'] = df.apply(lambda row: get_channel_percentage(row['image'], 1), axis=1)
+  df['green_channel'] = df.apply(lambda row: get_channel_percentage(row['image'], 2), axis=1)
+  df['salt_pepper_noise'] = df.apply(lambda row: get_salt_and_pepper_noise(row['image']), axis=1)
+  df['blurriness'] = df.apply(lambda row: get_image_blurriness_by_model(row['image'], model_blurriness), axis=1)
+
+  return df

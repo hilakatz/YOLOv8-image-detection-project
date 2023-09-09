@@ -57,7 +57,7 @@ MODEL_FLAG = 0
 PREDICTION_FLAG = 0
 SAVE_FLAG = 0
 IMAGE_PROPERTIES_FLAG = 0
-MODIFIED_DF_SAVE_FLAG = 0
+MODIFIED_DF_SAVE_FLAG = 1
 MODIFIED_DF_STATISTICS_FLAG = 0
 
 " Predict images and create dataframe if PREDICTION_FLAG is Yes"
@@ -364,44 +364,8 @@ if MODIFIED_DF_SAVE_FLAG:
     df_zebra_blurred.to_csv(utils.repo_image_path('/' + FOLDER_NAME + '/modified_zebra.csv'))
     print("modified iou: " + str(zebra_blurred_iou))
     # aspect ratio
-    df_zebra_blurred['aspect_ratio'] = df_zebra_blurred.apply(
-                lambda row: image_utils.return_aspect_ratio(row['height'], row['width']), axis=1)
-    # brightness
-    df_zebra_blurred['brightness'] = df_zebra_blurred.apply(lambda row: image_utils.get_image_brightness(row['image']),
-                                                      axis=1)
-    # image contrast
-    df_zebra_blurred['contrast'] = df_zebra_blurred.apply(lambda row: image_utils.get_image_contrast(row['image']), axis=1)
-    # image blurriness
-    df_zebra_blurred['sharpness'] = df_zebra_blurred.apply(lambda row: image_utils.get_image_sharpness(row['image']), axis=1)
-    # image noise
-    df_zebra_blurred['noise'] = df_zebra_blurred.apply(lambda row: image_utils.get_image_noise(row['image']), axis=1)
-    # image saturation
-    df_zebra_blurred['saturation'] = df_zebra_blurred.apply(lambda row: image_utils.get_image_saturation(row['image']),
-                                                      axis=1)
-    # image entropy
-    # The entropy or average information of an image is a measure of the degree of randomness in the image.
-    df_zebra_blurred['entropy'] = df_zebra_blurred.apply(lambda row: image_utils.get_image_entropy(row['image']), axis=1)
-    # image edges
-    df_zebra_blurred['edges'] = df_zebra_blurred.apply(lambda row: image_utils.edge_detection(row['image']), axis=1)
-    # image estimate noise
-    df_zebra_blurred['estimate_noise'] = df_zebra_blurred.apply(lambda row: image_utils.estimate_noise(row['image']), axis=1)
-    # image red channel percentage
-    df_zebra_blurred['red_channel'] = df_zebra_blurred.apply(lambda row: image_utils.get_channel_percentage(row['image'], 0),
-                                                       axis=1)
-    # image blue channel percentage
-    df_zebra_blurred['blue_channel'] = df_zebra_blurred.apply(lambda row: image_utils.get_channel_percentage(row['image'], 1),
-                                                        axis=1)
-    # image green channel percentage
-    df_zebra_blurred['green_channel'] = df_zebra_blurred.apply(
-                lambda row: image_utils.get_channel_percentage(row['image'], 2),
-                axis=1)
-    # image salt and pepper noise
-    df_zebra_blurred['salt_pepper_noise'] = df_zebra_blurred.apply(
-                lambda row: image_utils.get_salt_and_pepper_noise(row['image']),
-                axis=1)
-    # image blurriness by model
-    df_zebra_blurred['blurriness'] = df_zebra_blurred.apply(
-                lambda row: image_utils.get_image_blurriness_by_model(row['image'], model_blurriness), axis=1)
+    
+    image_utils.calculate_image_properties(df_zebra_blurred, model_blurriness)
 
     df_zebra_blurred.to_csv(utils.repo_image_path('/' + FOLDER_NAME + '/modified_zebra.csv'))
 
