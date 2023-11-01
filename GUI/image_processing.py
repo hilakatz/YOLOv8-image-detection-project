@@ -1,6 +1,7 @@
 import functions as utils
 import tensorflow as tf
 import os
+import re
 from ultralytics import YOLO
 import sys
 import pandas as pd
@@ -361,23 +362,49 @@ def run_image_properties(dataframe):
 
     return dataframe
 
-#
-# def api_pipeline(dataset_path, image_format, model, color = None):
-#     df_images = utils.create_df(dataset_path, image_format, model, color)
-#
-#     df_images['relative_boxes'] = df_images.apply(
-#     lambda row: utils.boxes_abs_to_relative(row['boxes'], row['height'], row['width']), axis = 1)
-#
-#     df_images = df_images.set_index('name')
-#
-#     return df_images
+def api_pipeline(dataset_name, dataset_path, annotation_path, image_format, model, annotation_foramt=None, color=None):
+    df_images = utils.create_df(dataset_path, image_format, model, color)
 
+    df_images['relative_boxes'] = df_images.apply(
+        lambda row: utils.boxes_abs_to_relative(row['boxes'], row['height'], row['width']), axis=1)
+
+    if annotation_foramt == 'xml':
+        annotaions_dict = utils.extract_xml_boxes(annotation_path)
+    else:
+        annotaions_dict = utils.extract_boxes(annotation_path)
+    df_annotations = pd.DataFrame({'names': annotaions_dict.keys(), 'annotations': annotaions_dict.values()})
+
+    df_annotations['names'] = df_annotations.apply(lambda row: re.sub('txt$', 'jpg', row['names']), axis=1)
+    df_annotations['names'] = df_annotations.apply(lambda row: re.sub('xml$', 'jpg', row['names']), axis=1)
+
+    df_images = df_images.set_index('name').join(df_annotations.set_index('names'))
+
+    # remove empty annotations
+    df_images['anno_type'] = df_images.apply(lambda row: type(row['annotations']), axis=1)
+    df_images = df_images.loc[df_images['anno_type'] != float]
+
+    if dataset_name == 'coco128':
+        df_images['relative_annotations'] = df_images.apply(lambda row: utils.yolo_to_relative(row['annotations']), axis=1)
+    else:
+        df_images['relative_annotations'] = df_images.apply(lambda row: utils.boxes_abs_to_relative(row['annotations'], row['height'], row['width']), axis=1)
+
+    df_images['iou_score'] = df_images.apply(
+        lambda row: utils.calculate_iou_list(row['relative_boxes'], row['relative_annotations']), axis=1)
+
+    df_images['max_iou_score'] = df_images.apply(lambda row: utils.max_iou(row['iou_score']), axis=1)
+
+    df_images['num_of_annotations'] = df_images.apply(lambda row: len(row['annotations']), axis=1)
+
+    df_images['avg_score'] = df_images.apply(lambda row: sum(row['max_iou_score']) / row['num_of_annotations'], axis=1)
+
+    total_iou = df_images['avg_score'].mean()
+    return df_images, total_iou
 
 def new_folder_processing(name, image_path, annotations_path, image_format, annotations_format):
     model_trained = YOLO(utils.repo_image_path('/best.torchscript'), task='detect')
 
     ''' Predict New Dataset '''
-    df, iou = utils.pipeline(name, image_path, annotations_path, image_format, model_trained, annotations_format)
+    df, iou = api_pipeline(name, image_path, annotations_path, image_format, model_trained, annotations_format)
     return df, iou
 
 
